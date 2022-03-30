@@ -33,18 +33,18 @@ class TextLabelFunction:
             return self.evaluate_ite(self.expression[1: -1], self.expression[-1], sentence)
     
     def evaluate_contains(self, token, checkstring, sentence):
-        if checkstring in token and token in sentence:
-            return True
-        return False
+        if checkstring in token:
+            return 1 if token in sentence else -1
+        return 0
     
     def evaluate_count(self, token, op, int_num, sentence):
         cntr = Counter(sentence)
         if op == '<':
-            return cntr[token] < int(int_num)
+            return 1 if cntr[token] < int(int_num) else -1
         elif op == '>':
-            return cntr[token] > int(int_num)
+            return 1 if cntr[token] > int(int_num) else -1
         else:
-            return cntr[token] == int(int_num)
+            return 1 if cntr[token] == int(int_num) else -1
     
     def evaluate_ite(self, expres, labelset, sentence):
         label_tuple = eval(labelset)
@@ -53,7 +53,12 @@ class TextLabelFunction:
         else: # expression is contains. TODO: update this when we add more expressions
             assert expres[0] == 'contains'
             result = self.evaluate_contains(expres[1], expres[2], sentence)
-        return label_tuple[0] if result else label_tuple[1]
+        if result == 1:
+            return label_tuple[0]
+        elif result == -1:
+            return label_tuple[1]
+        else:
+            return 0
 
 def enumerate_from_grammar(grammar_str, function_class):
     cfg_gnr = CFG.fromstring(grammar_str)
